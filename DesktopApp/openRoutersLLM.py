@@ -3,33 +3,36 @@ import json
 import os
 from dotenv import load_dotenv, dotenv_values
 from pprint import pprint
+import boto3
+import json
 
 config = dict(dotenv_values())
 
 key = config['OPEN_ROUTERS_KEY']
 
 def getPromptResponse(prompt):
-    response = requests.post(
-        url='https://openrouter.ai/api/v1/chat/completions',
-        headers={
-            "Authorization": f"Bearer {key}",
-        },
-        data=json.dumps({
-            "model":"mistralai/mistral-7b-instruct:free",
-            "messages":[
-                {"role": "user", "content": f"{prompt}"},
-            ],
-            "temperature":0.2,
-            "top_k":1,
-            "top_p":0.1,
-        })
+    
+
+    prompt_data = prompt
+
+    bedrock = boto3.client(service_name="bedrock-runtime", region_name="ap-south-1")
+
+    payload = {
+        "prompt": "[INST]"+prompt_data + "[INST]",
+        "max_tokens": 512,
+        "temperature": 0.5,
+        "top_p":0.9
+    }
+    body = json.dumps(payload)
+
+    response = bedrock.invoke_model(
+        body = body,
+        modelId = "mistral.mistral-7b-instruct-v0:2",
+        accept = "application/json",
+        contentType = "application/json"
     )
 
-    jsonData = json.loads(response.text)
-
-    pprint(jsonData)
-
-    return jsonData
+    return (json.loads(response.get("body").read())['outputs'][0]['text'])
 
 def fetchRateLimits():
     response = requests.get(f"https://openrouter.ai/api/v1/auth/key", headers={

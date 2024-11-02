@@ -27,14 +27,14 @@ def summarizeThis(text):
         return (summarizer(text, max_length=100))[0]['summary_text']
     
     elif workMode == "OPENROUTERS":
-        return openRoutersLLM.getPromptResponse(f"Tell me what this email sent to me is about in less than 100 words: {text}")['choices'][0]['message']['content']
+        return openRoutersLLM.getPromptResponse(f"Tell me what this email sent to me is about in less than 100 words: {text}")
 
 def generateResponse(mailContent):
     print(workMode)
     if workMode == "DEBUGGING":
         return "Example response to an email"
     elif workMode == "OPENROUTERS":
-        return openRoutersLLM.getPromptResponse(f"I received the following mail. Generate response to the mail:\n {mailContent}")['choices'][0]['message']['content']
+        return openRoutersLLM.getPromptResponse(f"I received the following mail. Generate response to the mail:\n {mailContent}")
 
 def jsonExtractor(emailText):
     if workMode == "DEBUGGING":
@@ -77,8 +77,8 @@ BEGIN! Extract event data
 Mail: {emailText}
 Data:"""
         responseJson = openRoutersLLM.getPromptResponse(PROMPT)
-        print(responseJson['choices'][0]['message']['content'])
-        possibleJsonData = responseJson['choices'][0]['message']['content'].strip().replace('\n','').replace('\\','')
+        print(responseJson)
+        possibleJsonData = responseJson.strip().replace('\n','').replace('\\','')
         possibleJsonData = (possibleJsonData[possibleJsonData.find('{'): possibleJsonData.rfind('}') + 1])
         print("POSSIBLE JSON DATA\n\n", json.loads(possibleJsonData))
         return json.loads(possibleJsonData)
@@ -117,7 +117,7 @@ def generateActionItems(emailText):
         return {"items": [{"name":"Collect ID at VIT Chennai","date":"15-04-2024","time":""}, {"name":"Schedule Meet","date":"17-04-2024","time":"20:00:00"}]}
     elif workMode == "OPENROUTERS":
         responseJson = openRoutersLLM.getPromptResponse(prompt)
-        possibleJsonData = responseJson['choices'][0]['message']['content'].strip().replace('\n','')
+        possibleJsonData = responseJson.strip().replace('\n','')
         possibleJsonData = (possibleJsonData[possibleJsonData.find('{'): possibleJsonData.rfind('}') + 1])
         return json.loads(possibleJsonData)
 
